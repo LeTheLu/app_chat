@@ -102,11 +102,11 @@ class _HomeState extends State<Home> {
                   color: Colors.blueAccent,
                   height: 20,
                   width: 20,
-                  child: Center(child: Text("1")),
+                  child: const Center(child: Text("1")),
                 ),
               ),
               const SizedBox(height: 15,),
-              Text("10:10 AM")
+              const Text("10:10 AM")
             ],
           )
         ],
