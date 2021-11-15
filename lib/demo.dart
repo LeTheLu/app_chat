@@ -26,11 +26,11 @@ class GetUserName extends StatelessWidget {
               (BuildContext context, AsyncSnapshot<DocumentSnapshot> snapshot) {
 
             if (snapshot.hasError) {
-              return Center(child: Text("Something went wrong"));
+              return const Center(child: Text("Something went wrong"));
             }
 
             if (snapshot.hasData && !snapshot.data!.exists) {
-              return Center(child: Text("Document does not exist"));
+              return const Center(child: Text("Document does not exist"));
             }
 
             if (snapshot.connectionState == ConnectionState.done) {
@@ -38,7 +38,7 @@ class GetUserName extends StatelessWidget {
               return Center(child: Text("Full Name: ${data['email']} ${data['name']}"));
             }
 
-            return Center(child: Text("loading"));
+            return const Center(child: Text("loading"));
           },
         ),
       ),
