@@ -20,7 +20,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      initialRoute: RouteName.login,
+      initialRoute: RouteName.chatRoom,
       onGenerateRoute: Routes.generate,
     );
   }

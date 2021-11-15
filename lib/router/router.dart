@@ -8,7 +8,7 @@ import 'package:flutter/material.dart';
 
 class RouteName{
   static const String login = "login";
-  static const String home = "chatRoom";
+  static const String chatRoom = "chatRoom";
   static const String chat = "chat";
   static const String signUp = "signup";
 }

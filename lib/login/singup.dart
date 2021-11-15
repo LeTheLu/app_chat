@@ -1,4 +1,5 @@
 import 'package:app_chat/servies/auth.dart';
+import 'package:app_chat/servies/database.dart';
 import 'package:app_chat/widget/widget.dart';
 import 'package:flutter/material.dart';
 
@@ -16,17 +17,25 @@ class _SignUpState extends State<SignUp> {
   bool isLoad = false;
   final formKey = GlobalKey<FormState>();
   final TextEditingController _controllerName = TextEditingController();
-  final TextEditingController _controllerUser = TextEditingController();
+  final TextEditingController _controllerGmail = TextEditingController();
   final TextEditingController _controllerPass = TextEditingController();
 
   AuthMethod authMethods  = AuthMethod();
+  DatabaseMethod databaseMethod = DatabaseMethod();
 
   signMeUp(){
     if(formKey.currentState!.validate()) {
       setState(() {
         isLoad = true;
       });
-      authMethods.signUpWithEmailAndPassWord(email: _controllerUser.text, password: _controllerPass.text).then((e) {
+      authMethods.signUpWithEmailAndPassWord(email: _controllerGmail.text, password: _controllerPass.text).then((e) {
+
+        Map<String, String> userMap = {
+          "name" : _controllerName.text,
+          "email" : _controllerGmail.text
+        };
+
+        databaseMethod.uploadUserInfo(userMap);
         Navigator.pushNamed(context, "chatRoom");
       });
 
@@ -64,7 +73,7 @@ class _SignUpState extends State<SignUp> {
                           child: Column(
                             children: [
                               textFieldName("Name", _controllerName),
-                              textFieldGmail("User", _controllerUser),
+                              textFieldGmail("Gmail", _controllerGmail),
                               passWord(controller: _controllerPass, checkHind: checkHind, onPressed: () {setState(() {checkHind = !checkHind;});}),
                             ],
                           ))

@@ -1,3 +1,7 @@
+import 'dart:ffi';
+
+import 'package:app_chat/servies/database.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 class Home extends StatefulWidget {
@@ -7,7 +11,25 @@ class Home extends StatefulWidget {
   _HomeState createState() => _HomeState();
 }
 
+
 class _HomeState extends State<Home> {
+
+  bool searchCheck = true;
+  final TextEditingController _controllerSearch = TextEditingController();
+  final DatabaseMethod _databaseMethod = DatabaseMethod();
+  late QuerySnapshot searchSnapshot;
+
+ @override
+  void initState() {
+   // TODO: implement initState
+   super.initState();
+   _controllerSearch.addListener(() {
+     _databaseMethod.getUserByUserName(name: _controllerSearch.text).then((val){
+       searchSnapshot = val;
+     });
+   });
+ }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -18,34 +40,81 @@ class _HomeState extends State<Home> {
             Padding(
               padding: const EdgeInsets.all(10),
               child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  avatarUser(),
-                  const SizedBox(width: 10,),
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  Row(
                     children: [
-                      const Text("User", style: TextStyle(fontWeight: FontWeight.w600,color: Colors.black, fontSize: 20),),
-                      Row(
+                      avatarUser(),
+                      const SizedBox(width: 10,),
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Padding(
-                            padding: const EdgeInsets.only(right: 8.0),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(50),
-                              child: Container(
-                                color: Colors.green,
-                                height: 10,
-                                width: 10,
+                          const Text("User", style: TextStyle(fontWeight: FontWeight.w600,color: Colors.black, fontSize: 20),),
+                          Row(
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.only(right: 8.0),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(50),
+                                  child: Container(
+                                    color: Colors.green,
+                                    height: 10,
+                                    width: 10,
+                                  ),
+                                ),
                               ),
-                            ),
-                          ),
-                          Text("Đang hoạt động", style: TextStyle(color: Colors.grey[900]),
-                          )],
-                      )
+                              Text("Đang hoạt động", style: TextStyle(color: Colors.grey[900]),
+                              )],
+                          )
+                        ],
+                      ),
                     ],
-                  )
+                  ),
+                  GestureDetector(
+                    onTap: (){
+                      setState(() {
+                        searchCheck =! searchCheck;
+                      });
+
+                    },
+                    child: Container(
+                      decoration: const BoxDecoration(
+                        color: Colors.white54,
+                        borderRadius: BorderRadius.all(Radius.circular(50)),
+                      ),
+                      height: 40,
+                      width: 40,
+                      child: const Icon(Icons.search, color: Colors.black),
+                    ),
+                  ),
                 ],
               ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 10),
+              child: Visibility(
+                visible: searchCheck,
+                  child: SizedBox(
+                    height: 50,
+                    width: MediaQuery.of(context).size.width -20,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: const BorderRadius.all(Radius.circular(30)),
+                          border: Border.all(color: Colors.teal)
+                      ),
+                      child:  Center(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                          child: TextField(
+                            controller: _controllerSearch,
+                            decoration: const InputDecoration.collapsed(hintText: "Search ... "),
+                          ),
+                        ),
+                      ),
+                    ),
+                  )),
             ),
             Expanded(
                 child: Opacity(
@@ -62,8 +131,9 @@ class _HomeState extends State<Home> {
                         padding: EdgeInsets.symmetric(horizontal: 10.0),
                         child: Divider(),
                       ),
-                      itemCount: 4,
-                        itemBuilder:(context, index) => user()),
+                      itemCount: searchSnapshot.docs.length,
+                        itemBuilder:(context, index) =>
+                            user(name: searchSnapshot.docs[index]['name'] ?? '')),
                   ),
                 ))
           ],
@@ -71,7 +141,7 @@ class _HomeState extends State<Home> {
       ),
     );
   }
-  Widget user(){
+  Widget user({required String name}){
     return Container(
       padding: const EdgeInsets.all(10),
       child: Row(
@@ -84,8 +154,8 @@ class _HomeState extends State<Home> {
               Column(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
-                  Text("User", style: TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.w500),),
+                children: [
+                  Text(name, style: TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.w500),),
                   SizedBox(height: 10,),
                   Text("messenger", style: TextStyle(color: Colors.grey, fontSize: 15))
                 ],
