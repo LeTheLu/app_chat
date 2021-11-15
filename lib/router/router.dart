@@ -2,13 +2,15 @@
 
 import 'package:app_chat/chat/chat.dart';
 import 'package:app_chat/home/home.dart';
-import 'package:app_chat/login/login_ui.dart';
+import 'package:app_chat/login/signin.dart';
+import 'package:app_chat/login/singup.dart';
 import 'package:flutter/material.dart';
 
 class RouteName{
   static const String login = "login";
-  static const String home = "/";
+  static const String home = "chatRoom";
   static const String chat = "chat";
+  static const String signUp = "signup";
 }
 
 class Routes{
@@ -18,13 +20,17 @@ class Routes{
       case "login": {
         return MaterialPageRoute(builder: (_) => const Login());
       }
-      case "/":
+      case "chatRoom":
         {
           return MaterialPageRoute(builder: (_) =>const Home());
         }
       case "chat":
         {
           return MaterialPageRoute(builder: (_) =>const Chat());
+        }
+      case "signup":
+        {
+          return MaterialPageRoute(builder: (_) =>const SignUp());
         }
     }
   }
