@@ -1,5 +1,3 @@
-import 'dart:ffi';
-
 import 'package:app_chat/servies/database.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -17,19 +15,19 @@ class _HomeState extends State<Home> {
   bool searchCheck = true;
   final TextEditingController _controllerSearch = TextEditingController();
   final DatabaseMethod _databaseMethod = DatabaseMethod();
-  late QuerySnapshot searchSnapshot;
 
- @override
-  void initState() {
-   // TODO: implement initState
-   super.initState();
-   _controllerSearch.addListener(() {
-     _databaseMethod.getUserByUserName(name: _controllerSearch.text).then((val){
-       searchSnapshot = val;
-     });
-   });
- }
+  CollectionReference users = FirebaseFirestore.instance.collection('users');
 
+  @override
+  initState(){
+    _controllerSearch.addListener(() async {
+      await _databaseMethod.getUserByUserName(name: _controllerSearch.text).then((val){
+        DocumentSnapshot data = val.data() as DocumentSnapshot;
+        print("data : ${data["name"]}");
+      });
+    });
+  super.initState();
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -131,9 +129,9 @@ class _HomeState extends State<Home> {
                         padding: EdgeInsets.symmetric(horizontal: 10.0),
                         child: Divider(),
                       ),
-                      itemCount: searchSnapshot.docs.length,
+                      itemCount: 1,
                         itemBuilder:(context, index) =>
-                            user(name: searchSnapshot.docs[index]['name'] ?? '')),
+                            user(name: "name")),
                   ),
                 ))
           ],
@@ -155,9 +153,9 @@ class _HomeState extends State<Home> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(name, style: TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.w500),),
-                  SizedBox(height: 10,),
-                  Text("messenger", style: TextStyle(color: Colors.grey, fontSize: 15))
+                  Text(name, style: const TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.w500),),
+                  const SizedBox(height: 10,),
+                  const Text("messenger", style: TextStyle(color: Colors.grey, fontSize: 15))
                 ],
               ),
             ],
