@@ -6,7 +6,7 @@ class DatabaseMethod {
     List<UserData> listUser = [];
     await FirebaseFirestore.instance
         .collection("users")
-        .where("name", isEqualTo: name)
+        .where("name", isLessThanOrEqualTo: name,)
         .get()
         .then((value) {
       List<UserData> data =

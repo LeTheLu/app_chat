@@ -146,7 +146,7 @@ class _HomeState extends State<Home> {
   Widget user({required String name}){
     return GestureDetector(
       onTap: (){
-        Navigator.pushNamed(context, "chat");
+        Navigator.pushNamed(context, "chat", arguments: name);
       },
       child: Container(
         padding: const EdgeInsets.all(10),
