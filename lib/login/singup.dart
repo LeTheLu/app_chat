@@ -1,3 +1,4 @@
+import 'package:app_chat/model/user.dart';
 import 'package:app_chat/servies/auth.dart';
 import 'package:app_chat/servies/database.dart';
 import 'package:app_chat/widget/widget.dart';
@@ -22,20 +23,21 @@ class _SignUpState extends State<SignUp> {
 
   AuthMethod authMethods  = AuthMethod();
   DatabaseMethod databaseMethod = DatabaseMethod();
+  UserData userYou = UserData();
 
   signMeUp(){
     if(formKey.currentState!.validate()) {
       setState(() {
         isLoad = true;
       });
-      authMethods.signUpWithEmailAndPassWord(email: _controllerGmail.text, password: _controllerPass.text).then((e) {
-
+      authMethods.signUpWithEmailAndPassWord(email: _controllerGmail.text, password: _controllerPass.text).then((e) async {
         Map<String, String> userMap = {
           "name" : _controllerName.text,
           "email" : _controllerGmail.text
         };
-
         databaseMethod.uploadUserInfo(userMap);
+        UserInheritedWidget.of(context).user.email = _controllerGmail.text;
+        UserInheritedWidget.of(context).user.name = await databaseMethod.getNameByUserGmail(email: UserInheritedWidget.of(context).user.email ?? "");
         Navigator.pushNamed(context, "chatRoom");
       });
 

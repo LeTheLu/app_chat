@@ -1,5 +1,6 @@
+import 'dart:async';
+import 'package:app_chat/model/user.dart';
 import 'package:app_chat/servies/database.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 class Home extends StatefulWidget {
@@ -12,22 +13,25 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
 
-  bool searchCheck = true;
+  bool searchCheck = false;
   final TextEditingController _controllerSearch = TextEditingController();
-  final DatabaseMethod _databaseMethod = DatabaseMethod();
+  DatabaseMethod userData = DatabaseMethod();
+  List<UserData> list = [];
+  Debouncer debouncer = Debouncer(500);
 
-  CollectionReference users = FirebaseFirestore.instance.collection('users');
 
   @override
-  initState(){
-    _controllerSearch.addListener(() async {
-      await _databaseMethod.getUserByUserName(name: _controllerSearch.text).then((val){
-        DocumentSnapshot data = val.data() as DocumentSnapshot;
-        print("data : ${data["name"]}");
+  void initState() {;
+    _controllerSearch.addListener(() {
+      debouncer.run(() async {
+        list = await userData.getUserByUserName(name: _controllerSearch.text);
+        setState(() {});
       });
     });
-  super.initState();
+    super.initState();
   }
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -48,7 +52,7 @@ class _HomeState extends State<Home> {
                         mainAxisAlignment: MainAxisAlignment.start,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text("User", style: TextStyle(fontWeight: FontWeight.w600,color: Colors.black, fontSize: 20),),
+                          Text(UserInheritedWidget.of(context).user.name ?? 'User', style: TextStyle(fontWeight: FontWeight.w600,color: Colors.black, fontSize: 20),),
                           Row(
                             children: [
                               Padding(
@@ -129,9 +133,9 @@ class _HomeState extends State<Home> {
                         padding: EdgeInsets.symmetric(horizontal: 10.0),
                         child: Divider(),
                       ),
-                      itemCount: 1,
+                      itemCount: list.length,
                         itemBuilder:(context, index) =>
-                            user(name: "name")),
+                            user(name: list[index].name ?? "" )),
                   ),
                 ))
           ],
@@ -140,44 +144,49 @@ class _HomeState extends State<Home> {
     );
   }
   Widget user({required String name}){
-    return Container(
-      padding: const EdgeInsets.all(10),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            children: [
-              avatarUser(),
-              const SizedBox(width: 10,),
-              Column(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(name, style: const TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.w500),),
-                  const SizedBox(height: 10,),
-                  const Text("messenger", style: TextStyle(color: Colors.grey, fontSize: 15))
-                ],
-              ),
-            ],
-          ),
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(50),
-                child: Container(
-                  color: Colors.blueAccent,
-                  height: 20,
-                  width: 20,
-                  child: const Center(child: Text("1")),
+    return GestureDetector(
+      onTap: (){
+        Navigator.pushNamed(context, "chat");
+      },
+      child: Container(
+        padding: const EdgeInsets.all(10),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                avatarUser(),
+                const SizedBox(width: 10,),
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(name, style: const TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.w500),),
+                    const SizedBox(height: 10,),
+                    const Text("messenger", style: TextStyle(color: Colors.grey, fontSize: 15))
+                  ],
                 ),
-              ),
-              const SizedBox(height: 15,),
-              const Text("10:10 AM")
-            ],
-          )
-        ],
+              ],
+            ),
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(50),
+                  child: Container(
+                    color: Colors.blueAccent,
+                    height: 20,
+                    width: 20,
+                    child: const Center(child: Text("1")),
+                  ),
+                ),
+                const SizedBox(height: 15,),
+                const Text("10:10 AM")
+              ],
+            )
+          ],
+        ),
       ),
     );
   }
@@ -190,5 +199,31 @@ class _HomeState extends State<Home> {
         width: 70,
       ),
     );
+  }
+}
+class Debouncer {
+  final int _durationMilliseconds;
+  Timer? _timer;
+  Function? _currentFn;
+  List? _arguments;
+  Debouncer(this._durationMilliseconds) {
+    _resetTimer();
+  }
+
+  _resetTimer() {
+    if(_timer != null && _timer!.isActive) {
+      _timer!.cancel();
+    }
+    _timer = Timer(Duration(milliseconds: _durationMilliseconds), () {
+      if (_currentFn != null) {
+        Function.apply(_currentFn!, _arguments);
+      }
+    });
+  }
+
+  run(Function fn, [List args = const []]) {
+    _currentFn = fn;
+    _arguments = args;
+    _resetTimer();
   }
 }
