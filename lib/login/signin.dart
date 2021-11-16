@@ -37,7 +37,7 @@ class _LoginState extends State<Login> {
           .then((value) async {
         UserInheritedWidget.of(context).user.email = _controllerGmail.text;
         UserInheritedWidget.of(context).user.name = await userData.getNameByUserGmail(email: UserInheritedWidget.of(context).user.email ?? "");
-        return Navigator.pushNamed(context, "chatRoom");
+        return Navigator.of(context).pushNamedAndRemoveUntil("chatRoom", (route) => false);
       }).catchError((e) {
         setState(() {
           checkSignInErr = true;

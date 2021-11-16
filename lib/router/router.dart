@@ -26,8 +26,8 @@ class Routes{
         }
       case "chat":
         {
-          //String nameFriend = settings.arguments as String;
-          return MaterialPageRoute(builder: (_) =>Chat( nameFriend: "abc",));
+          String nameFriend = settings.arguments as String;
+          return MaterialPageRoute(builder: (_) =>Chat( nameFriend: nameFriend,));
         }
       case "signup":
         {
