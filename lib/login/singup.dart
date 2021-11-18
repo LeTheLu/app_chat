@@ -49,7 +49,7 @@ class _SignUpState extends State<SignUp> {
     return Scaffold(
       backgroundColor: Colors.cyan[200],
       body: SafeArea(
-        child: isLoad? Container(child: Center(child: CircularProgressIndicator(),),) :SingleChildScrollView(
+        child: isLoad? const Center(child: CircularProgressIndicator(),) :SingleChildScrollView(
           physics: const NeverScrollableScrollPhysics(),
           child: SizedBox(
             height: MediaQuery.of(context).size.height,
@@ -58,8 +58,8 @@ class _SignUpState extends State<SignUp> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                const Text("Đăng Ký", style: TextStyle(fontWeight: FontWeight.bold, color:Colors.white, fontSize: 30),),
-                const SizedBox(height: 20,),
+                const Text("Đăng Ký", style: TextStyle(fontWeight: FontWeight.bold, color:Colors.white, fontSize: 35),),
+                const SizedBox(height: 30,),
                 Container(
                   decoration: BoxDecoration(
                     borderRadius: const BorderRadius.all(Radius.circular(30)),
