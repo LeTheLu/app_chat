@@ -10,18 +10,16 @@ class Home extends StatefulWidget {
   _HomeState createState() => _HomeState();
 }
 
-
 class _HomeState extends State<Home> {
-
   bool searchCheck = false;
   final TextEditingController _controllerSearch = TextEditingController();
   DatabaseMethod userData = DatabaseMethod();
   List<UserData> list = [];
   Debouncer debouncer = Debouncer(500);
 
-
   @override
-  void initState() {;
+  void initState() {
+    _controllerSearch.text = "trung";
     _controllerSearch.addListener(() {
       debouncer.run(() async {
         list = await userData.getUserByUserName(name: _controllerSearch.text);
@@ -31,121 +29,140 @@ class _HomeState extends State<Home> {
     super.initState();
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.cyan[200],
-      body: SafeArea(
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(10),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: [
-                      avatarUser(),
-                      const SizedBox(width: 10,),
-                      Column(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(UserInheritedWidget.of(context).user.name ?? 'User', style: TextStyle(fontWeight: FontWeight.w600,color: Colors.black, fontSize: 20),),
-                          Row(
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.only(right: 8.0),
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(50),
-                                  child: Container(
-                                    color: Colors.green,
-                                    height: 10,
-                                    width: 10,
+        backgroundColor: Colors.cyan[200],
+        body: SafeArea(
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(10),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        avatarUser(),
+                        const SizedBox(
+                          width: 10,
+                        ),
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              UserInheritedWidget.of(context).user.name ??
+                                  'User',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.black,
+                                  fontSize: 20),
+                            ),
+                            Row(
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(right: 8.0),
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(50),
+                                    child: Container(
+                                      color: Colors.green,
+                                      height: 10,
+                                      width: 10,
+                                    ),
                                   ),
                                 ),
-                              ),
-                              Text("Đang hoạt động", style: TextStyle(color: Colors.grey[900]),
-                              )],
-                          )
-                        ],
-                      ),
-                    ],
-                  ),
-                  GestureDetector(
-                    onTap: (){
-                      setState(() {
-                        searchCheck =! searchCheck;
-                      });
-
-                    },
-                    child: Container(
-                      decoration: const BoxDecoration(
-                        color: Colors.white54,
-                        borderRadius: BorderRadius.all(Radius.circular(50)),
-                      ),
-                      height: 40,
-                      width: 40,
-                      child: const Icon(Icons.search, color: Colors.black),
+                                Text(
+                                  "Đang hoạt động",
+                                  style: TextStyle(color: Colors.grey[900]),
+                                )
+                              ],
+                            )
+                          ],
+                        ),
+                      ],
                     ),
-                  ),
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 10),
-              child: Visibility(
-                visible: searchCheck,
-                  child: SizedBox(
-                    height: 50,
-                    width: MediaQuery.of(context).size.width -20,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: const BorderRadius.all(Radius.circular(30)),
-                          border: Border.all(color: Colors.teal)
+                    GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          searchCheck = !searchCheck;
+                        });
+                      },
+                      child: Container(
+                        decoration: const BoxDecoration(
+                          color: Colors.white54,
+                          borderRadius: BorderRadius.all(Radius.circular(50)),
+                        ),
+                        height: 40,
+                        width: 40,
+                        child: const Icon(Icons.search, color: Colors.black),
                       ),
-                      child:  Center(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                          child: TextField(
-                            controller: _controllerSearch,
-                            decoration: const InputDecoration.collapsed(hintText: "Search ... "),
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                child: Visibility(
+                    visible: searchCheck,
+                    child: SizedBox(
+                      height: 50,
+                      width: MediaQuery.of(context).size.width - 20,
+                      child: Container(
+                        decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius:
+                                const BorderRadius.all(Radius.circular(30)),
+                            border: Border.all(color: Colors.teal)),
+                        child: Center(
+                          child: Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 10.0),
+                            child: TextField(
+                              controller: _controllerSearch,
+                              decoration: const InputDecoration.collapsed(
+                                  hintText: "Search ... "),
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  )),
-            ),
-            Expanded(
-                child: Opacity(
-                  opacity: 0.7,
-                  child: Container(
-                    decoration: const BoxDecoration(
-                        color: Colors.white,
-                      borderRadius: BorderRadius.only(topLeft: Radius.circular(50), topRight: Radius.circular(50))
-                    ),
-                    height: double.infinity,
-                    width: double.infinity,
-                    child: ListView.separated(
+                    )),
+              ),
+              Expanded(
+                  child: Opacity(
+                opacity: 0.7,
+                child: Container(
+                  decoration: const BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(50),
+                          topRight: Radius.circular(50))),
+                  height: double.infinity,
+                  width: double.infinity,
+                  child: ListView.separated(
                       separatorBuilder: (context, index) => const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 10.0),
-                        child: Divider(),
-                      ),
+                            padding: EdgeInsets.symmetric(horizontal: 10.0),
+                            child: Divider(),
+                          ),
                       itemCount: list.length,
-                        itemBuilder:(context, index) =>
-                            user(name: list[index].name ?? "" )),
-                  ),
-                ))
-          ],
+                      itemBuilder: (context, index) =>
+                          user(name: list[index].name ?? "")),
+                ),
+              ))
+            ],
+          ),
         ),
-      ),
-    );
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            userData.chatRoom();
+          },
+          child: Icon(Icons.add),
+        ));
   }
-  Widget user({required String name}){
+
+  Widget user({required String name}) {
     return GestureDetector(
-      onTap: (){
+      onTap: () {
         Navigator.pushNamed(context, "chat", arguments: name);
       },
       child: Container(
@@ -156,14 +173,25 @@ class _HomeState extends State<Home> {
             Row(
               children: [
                 avatarUser(),
-                const SizedBox(width: 10,),
+                const SizedBox(
+                  width: 10,
+                ),
                 Column(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(name, style: const TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.w500),),
-                    const SizedBox(height: 10,),
-                    const Text("messenger", style: TextStyle(color: Colors.grey, fontSize: 15))
+                    Text(
+                      name,
+                      style: const TextStyle(
+                          color: Colors.black,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w500),
+                    ),
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    const Text("messenger",
+                        style: TextStyle(color: Colors.grey, fontSize: 15))
                   ],
                 ),
               ],
@@ -181,7 +209,9 @@ class _HomeState extends State<Home> {
                     child: const Center(child: Text("1")),
                   ),
                 ),
-                const SizedBox(height: 15,),
+                const SizedBox(
+                  height: 15,
+                ),
                 const Text("10:10 AM")
               ],
             )
@@ -190,7 +220,8 @@ class _HomeState extends State<Home> {
       ),
     );
   }
-  Widget avatarUser(){
+
+  Widget avatarUser() {
     return ClipRRect(
       borderRadius: BorderRadius.circular(50),
       child: Container(
@@ -201,6 +232,7 @@ class _HomeState extends State<Home> {
     );
   }
 }
+
 class Debouncer {
   final int _durationMilliseconds;
   Timer? _timer;
@@ -211,7 +243,7 @@ class Debouncer {
   }
 
   _resetTimer() {
-    if(_timer != null && _timer!.isActive) {
+    if (_timer != null && _timer!.isActive) {
       _timer!.cancel();
     }
     _timer = Timer(Duration(milliseconds: _durationMilliseconds), () {

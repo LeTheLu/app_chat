@@ -26,6 +26,7 @@ class _LoginState extends State<Login> {
   DatabaseMethod userData = DatabaseMethod();
   UserData userYou = UserData();
 
+
   signMeIn() {
     if (keyFormSignIn.currentState!.validate()) {
       setState(() {
@@ -36,8 +37,11 @@ class _LoginState extends State<Login> {
               email: _controllerGmail.text, password: _controllerPass.text)
           .then((value) async {
         UserInheritedWidget.of(context).user.email = _controllerGmail.text;
-        UserInheritedWidget.of(context).user.name = await userData.getNameByUserGmail(email: UserInheritedWidget.of(context).user.email ?? "");
-        return Navigator.of(context).pushNamedAndRemoveUntil("chatRoom", (route) => false);
+        UserInheritedWidget.of(context).user.name =
+            await userData.getNameByUserGmail(
+                email: UserInheritedWidget.of(context).user.email ?? "");
+        return Navigator.of(context)
+            .pushNamedAndRemoveUntil("chatRoom", (route) => false);
       }).catchError((e) {
         setState(() {
           checkSignInErr = true;
@@ -47,8 +51,16 @@ class _LoginState extends State<Login> {
       });
     }
   }
-  signInWithGoogle(){
+
+  signInWithGoogle() {
     authMethods.signInWithGoogle();
+  }
+  @override
+  void initState() {
+    // TODO: implement initState
+    _controllerGmail.text = "qweqwe@gmail.com";
+    _controllerPass.text = "lethelu123";
+    super.initState();
   }
 
   @override
@@ -176,13 +188,19 @@ class _LoginState extends State<Login> {
                             child: const SizedBox(
                               height: 20,
                               width: 20,
-                              child: Icon(Icons.clear, color: Colors.white,),
+                              child: Icon(
+                                Icons.clear,
+                                color: Colors.white,
+                              ),
                             ),
                           ),
                         )
                       ],
                     )),
-              ))
-        ]));
+              )),
+        ]
+        ),
+
+    );
   }
 }

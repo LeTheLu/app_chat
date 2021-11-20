@@ -31,4 +31,17 @@ class DatabaseMethod {
   uploadUserInfo(userMap) {
     FirebaseFirestore.instance.collection("users").add(userMap);
   }
+
+  sendMessage({required String message,required String user}) async {
+    Map<String, String> data = {
+      "message" : message,
+      "user" : user,
+      "time" : DateTime.now().millisecondsSinceEpoch.toString()
+    };
+    await FirebaseFirestore.instance.collection("chat").doc("098").collection("234").add(data).then((value) => print("done"));
+
+  }
+
+  chatRoom() async {
+
 }
