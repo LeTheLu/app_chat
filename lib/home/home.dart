@@ -152,12 +152,8 @@ class _HomeState extends State<Home> {
             ],
           ),
         ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            userData.chatRoom();
-          },
-          child: Icon(Icons.add),
-        ));
+
+    );
   }
 
   Widget user({required String name}) {

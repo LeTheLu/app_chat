@@ -13,6 +13,7 @@ class Chat extends StatefulWidget {
 
 class _ChatState extends State<Chat> {
   DatabaseMethod userData = DatabaseMethod();
+
   final Stream<QuerySnapshot> _usersStream = FirebaseFirestore.instance
       .collection('chat')
       .doc("098")
@@ -20,8 +21,11 @@ class _ChatState extends State<Chat> {
       .orderBy("time", descending: false)
       .snapshots();
   bool checkIsUser = true;
+
   @override
   Widget build(BuildContext context) {
+    TextEditingController textEditingController = TextEditingController();
+    ScrollController _controller = ScrollController();
     return Scaffold(
       backgroundColor: Colors.cyan[200],
       body: SafeArea(
@@ -85,6 +89,8 @@ class _ChatState extends State<Chat> {
                     return const CircularProgressIndicator();
                   }
                   return ListView.builder(
+
+                    controller: _controller,
                     itemCount: snapshot.data!.docs.length,
                     itemBuilder: (context, index) =>
                         messageChat(message: snapshot.data!.docs[index]["message"],
@@ -106,28 +112,30 @@ class _ChatState extends State<Chat> {
                     decoration: const BoxDecoration(
                         color: Colors.cyan,
                         borderRadius: BorderRadius.all(Radius.circular(50))),
-                    child: const TextField(
-                      decoration: InputDecoration.collapsed(hintText: "Aa"),
+                    child: TextField(
+                      controller: textEditingController,
+                      decoration: const InputDecoration.collapsed(hintText: "Aa"),
                     ),
                   )),
-                  const SizedBox(
-                    height: 50,
-                    width: 50,
-                    child: Icon(Icons.send),
+                  GestureDetector(
+                    onTap: (){
+                      setState(() {
+                        userData.sendMessage(
+                            user: UserInheritedWidget.of(context).user.name ?? "",
+                            message: textEditingController.text);
+                      });
+                    },
+                    child: const SizedBox(
+                      height: 50,
+                      width: 50,
+                      child: Icon(Icons.send),
+                    ),
                   )
                 ],
               ),
             )
           ],
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          userData.sendMessage(
-              user: UserInheritedWidget.of(context).user.name ?? "",
-              message: "abc");
-        },
-        child: Icon(Icons.add),
       ),
     );
   }
