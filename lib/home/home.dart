@@ -19,14 +19,21 @@ class _HomeState extends State<Home> {
 
   @override
   void initState() {
-    _controllerSearch.text = "trung";
+    getChatFriend();
+    /*_controllerSearch.text = "trung";
     _controllerSearch.addListener(() {
       debouncer.run(() async {
-        list = await userData.getUserByUserName(name: _controllerSearch.text);
+
         setState(() {});
       });
-    });
+    });*/
     super.initState();
+  }
+
+  getChatFriend()async{
+    //list = await userData.listChatWithUser(emailUser: UserInheritedWidget.of(context).user.email ?? "");
+    setState(() {
+    });
   }
 
   @override
@@ -54,7 +61,7 @@ class _HomeState extends State<Home> {
                             Text(
                               UserInheritedWidget.of(context).user.name ??
                                   'User',
-                              style: TextStyle(
+                              style: const TextStyle(
                                   fontWeight: FontWeight.w600,
                                   color: Colors.black,
                                   fontSize: 20),

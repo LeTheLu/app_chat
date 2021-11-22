@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:app_chat/model/user.dart';
 import 'package:app_chat/servies/database.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -13,7 +15,8 @@ class Chat extends StatefulWidget {
 
 class _ChatState extends State<Chat> {
   DatabaseMethod userData = DatabaseMethod();
-
+  StreamController<bool> stream = StreamController();
+  bool isInit = true;
   final Stream<QuerySnapshot> _usersStream = FirebaseFirestore.instance
       .collection('chat')
       .doc("098")
@@ -22,10 +25,30 @@ class _ChatState extends State<Chat> {
       .snapshots();
   bool checkIsUser = true;
 
+  final ScrollController _controller = ScrollController();
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    stream.stream.listen((event) {
+      if(event&& isInit){
+        _controller.animateTo(
+          _controller.position.maxScrollExtent,
+          duration: Duration(seconds: 1),
+          curve: Curves.fastOutSlowIn,
+        );
+        // isInit = false;
+      }
+    });
+    // WidgetsBinding.instance?.addPostFrameCallback((timeStamp) {
+    //
+    //
+    // });
+  }
   @override
   Widget build(BuildContext context) {
     TextEditingController textEditingController = TextEditingController();
-    ScrollController _controller = ScrollController();
+
     return Scaffold(
       backgroundColor: Colors.cyan[200],
       body: SafeArea(
@@ -74,7 +97,7 @@ class _ChatState extends State<Chat> {
               ),
             ),
             Expanded(
-                child: Container(
+                child: SizedBox(
               height: double.infinity,
               width: double.infinity,
               child: StreamBuilder(
@@ -86,10 +109,16 @@ class _ChatState extends State<Chat> {
                     );
                   }
                   if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const CircularProgressIndicator();
+                    return const Center(
+                      child: SizedBox(
+                        height: 100,
+                        width: 100,
+                        child: CircularProgressIndicator(),
+                      ),
+                    );
                   }
+                  stream.sink.add(true);
                   return ListView.builder(
-
                     controller: _controller,
                     itemCount: snapshot.data!.docs.length,
                     itemBuilder: (context, index) =>

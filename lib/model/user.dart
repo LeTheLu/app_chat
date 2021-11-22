@@ -21,6 +21,66 @@ class UserData {
     return data;
   }
 }
+class UserChat {
+  String? userEmail;
+  String? fiendEmail;
+
+  UserChat({this.userEmail, this.fiendEmail});
+
+  UserChat.fromJson(Map<String, dynamic> json) {
+    userEmail = json['emailUser'];
+    fiendEmail = json['emailFriend'];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data =  <String, dynamic>{};
+    data['emailUser'] = userEmail;
+    data['emailFriend'] = fiendEmail;
+    return data;
+  }
+}
+
+
+class ChatRoom {
+  Email? email;
+
+  ChatRoom({this.email});
+
+  ChatRoom.fromJson(Map<String, dynamic> json) {
+    email = json['email'] != null ? Email.fromJson(json['email']) : null;
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = <String, dynamic>{};
+    if (email != null) {
+      data['email'] = email!.toJson();
+    }
+    return data;
+  }
+}
+
+class Email {
+  String? id01;
+  String? id02;
+
+  Email({this.id01, this.id02});
+
+  Email.fromJson(Map<String, dynamic> json) {
+    id01 = json['id01'];
+    id02 = json['id02'];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['id01'] = id01;
+    data['id02'] = id02;
+    return data;
+  }
+}
+
+
+
+
 
 class UserInheritedWidget extends InheritedWidget {
   final UserData user;
