@@ -79,9 +79,6 @@ class Email {
 }
 
 
-
-
-
 class UserInheritedWidget extends InheritedWidget {
   final UserData user;
 

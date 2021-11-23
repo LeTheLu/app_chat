@@ -2,6 +2,18 @@ import 'package:app_chat/model/user.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class DatabaseMethod {
+  Future<String> newChatRoom({required String emailUser, required String emailFriend}) async {
+    String idChatRoom = "";
+    String idUser = await getIdByGmail(email: emailUser);
+    String idFriend = await getIdByGmail(email: emailFriend);
+
+    Map<String, Map<String, bool>> map = {
+      "email": {idUser: true, idFriend: true}
+    };
+    FirebaseFirestore.instance.collection("chat").doc().set(map);
+    idChatRoom = await getIdChatRoomBy2Email(emailFriend: emailFriend, emailUser: emailUser);
+    return idChatRoom;
+  }
 
   Future<String> getIdByGmail({required String email}) async {
     String id = "";
@@ -24,6 +36,16 @@ class DatabaseMethod {
     return email;
   }
 
+  Future<String> getNameById({required String id}) async {
+    String name = "";
+    await FirebaseFirestore.instance
+        .collection("users")
+        .doc(id)
+        .get()
+        .then((value) => name = value["name"]);
+    return name;
+  }
+
   Future<List<UserData>> getUserByUserName({required String name}) async {
     List<UserData> listUser = [];
     await FirebaseFirestore.instance
@@ -41,7 +63,7 @@ class DatabaseMethod {
     return listUser;
   }
 
-  Future<String> checkChatRoomBy2Email({required String emailUser, required String emailFriend}) async {
+  Future<String> getIdChatRoomBy2Email({required String emailUser, required String emailFriend}) async {
     String id = "";
     try {
       String idUser = await getIdByGmail(email: emailUser);
@@ -73,7 +95,7 @@ class DatabaseMethod {
     FirebaseFirestore.instance.collection("users").add(userMap);
   }
 
-  sendMessage({required String message, required String user}) async {
+  sendMessage({required String message, required String user, required String idRoom}) async {
     Map<String, String> data = {
       "message": message,
       "user": user,
@@ -81,34 +103,56 @@ class DatabaseMethod {
     };
     await FirebaseFirestore.instance
         .collection("chat")
-        .doc("098")
-        .collection("234")
+        .doc(idRoom)
+        .collection("chat")
         .add(data)
         .then((value) => print("done"));
   }
 
-  Future<String> newChatRoom({required String emailUser, required String emailFriend}) async {
-    String idChatRoom = "";
+  Future<List> listChatWithUser({required String emailUser}) async {
+    List list = [];
+    try{
     String idUser = await getIdByGmail(email: emailUser);
-    String idFriend = await getIdByGmail(email: emailFriend);
-
-    Map<String, Map<String, bool>> map = {
-      "email": {idUser: true, idFriend: true}
-    };
-    FirebaseFirestore.instance.collection("chat").doc().set(map);
-    idChatRoom = await checkChatRoomBy2Email(emailFriend: emailFriend, emailUser: emailUser);
-    return idChatRoom;
-  }
-
-  Future<List<ChatRoom>> listChatWithUser({required String emailUser}) async {
-    String idUser = await getIdByGmail(email: emailUser);
-    print(idUser);
-    List<ChatRoom> list = [];
     FirebaseFirestore.instance.collection("chat").where("email.$idUser", isEqualTo: true).get().then((value) {
-      print(value);
+      for (var element in value.docs) {
+        list.add(element.id);
+      }
       list = value.docs.map((e) => ChatRoom.fromJson(e.data())).toList();
-    }).catchError((e){});
-    print(list.first.email);
+    });
+    }catch(e){
+      throw Exception(e);
+    }
     return list;
   }
+
+  Future<String> getIdFriendInChatRoom({required String idChatRoom, required String emailUser}) async {
+    String idFriend = "";
+    try{
+    String idUsers = await getIdByGmail(email: emailUser);
+    var a = await FirebaseFirestore.instance.collection("chat").doc(idChatRoom).get();
+    Map<String, dynamic> map = Map<String, dynamic>.from(a.data()!.values.first);
+    map.removeWhere((key, value) => key == idUsers);
+    idFriend = map.keys.first;
+    }catch(e){
+      throw Exception();
+    }
+    return idFriend;
+  }
+
+  Future<List> getIdChatRoomsByEmailUserHome({required String emailUser}) async {
+    List listId = [];
+    try {
+      String idUser = await getIdByGmail(email: emailUser);
+      await FirebaseFirestore.instance
+          .collection("chat")
+          .where("email.$idUser", isEqualTo: true)
+          .get().then((value) =>value.docs.forEach((element) {
+            listId.add(element.id);
+      }));
+    } catch (e) {
+      throw Exception();
+    }
+    return listId;
+  }
+
 }

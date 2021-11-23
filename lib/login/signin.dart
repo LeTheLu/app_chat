@@ -200,11 +200,6 @@ class _LoginState extends State<Login> {
               )),
         ]
         ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          await userData.listChatWithUser(emailUser: "lethelu@gmail.com");
-        },
-      ),
     );
   }
 }

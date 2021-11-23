@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:app_chat/chat/chat.dart';
 import 'package:app_chat/model/user.dart';
 import 'package:app_chat/servies/database.dart';
 import 'package:flutter/material.dart';
@@ -14,30 +15,23 @@ class _HomeState extends State<Home> {
   bool searchCheck = false;
   final TextEditingController _controllerSearch = TextEditingController();
   DatabaseMethod userData = DatabaseMethod();
-  List<UserData> list = [];
   Debouncer debouncer = Debouncer(500);
+  String emailUser = '';
 
-  @override
+  List list = [];
+
+@override
   void initState() {
-    getChatFriend();
-    /*_controllerSearch.text = "trung";
-    _controllerSearch.addListener(() {
-      debouncer.run(() async {
-
-        setState(() {});
-      });
-    });*/
-    super.initState();
-  }
-
-  getChatFriend()async{
-    //list = await userData.listChatWithUser(emailUser: UserInheritedWidget.of(context).user.email ?? "");
-    setState(() {
+    WidgetsBinding.instance!.addPostFrameCallback((timeStamp) async  {
+      emailUser = UserInheritedWidget.of(context).user.email!;
+      list = await userData.getIdChatRoomsByEmailUserHome(emailUser:emailUser);
+      setState(() {});
     });
+  super.initState();
   }
-
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context){
+
     return Scaffold(
         backgroundColor: Colors.cyan[200],
         body: SafeArea(
@@ -152,21 +146,45 @@ class _HomeState extends State<Home> {
                             child: Divider(),
                           ),
                       itemCount: list.length,
-                      itemBuilder: (context, index) =>
-                          user(name: list[index].name ?? "")),
+                      itemBuilder: (context, index){
+                       return UserFriend(idChatRoom: list[index],);
+                         //userFriend(name: "nameFriend",idChatRoom: list[index]);
+                      }
                 ),
-              ))
+              )))
             ],
           ),
         ),
 
     );
   }
+}
+class UserFriend extends StatefulWidget {
+  final String idChatRoom;
+  const UserFriend({Key? key,required this.idChatRoom}) : super(key: key);
 
-  Widget user({required String name}) {
+  @override
+  State<UserFriend> createState() => _UserFriendState();
+}
+
+class _UserFriendState extends State<UserFriend> {
+  DatabaseMethod userData = DatabaseMethod();
+  String nameFriend= "";
+
+  @override
+  void initState() {
+    WidgetsBinding.instance!.addPostFrameCallback((timeStamp) async  {
+      String id = await userData.getIdFriendInChatRoom(emailUser: UserInheritedWidget.of(context).user.email ?? "" ,idChatRoom: widget.idChatRoom );
+      nameFriend = await userData.getNameById(id: id);
+      setState(() {});
+    });
+    super.initState();
+  }
+  @override
+  Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {
-        Navigator.pushNamed(context, "chat", arguments: name);
+      onTap: (){
+        Navigator.push(context, MaterialPageRoute(builder: (_) => Chat(idChatRoom: widget.idChatRoom,nameFriend: nameFriend,)));
       },
       child: Container(
         padding: const EdgeInsets.all(10),
@@ -184,7 +202,7 @@ class _HomeState extends State<Home> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      name,
+                      nameFriend,
                       style: const TextStyle(
                           color: Colors.black,
                           fontSize: 18,
@@ -223,18 +241,8 @@ class _HomeState extends State<Home> {
       ),
     );
   }
-
-  Widget avatarUser() {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(50),
-      child: Container(
-        color: Colors.teal,
-        height: 70,
-        width: 70,
-      ),
-    );
-  }
 }
+
 
 class Debouncer {
   final int _durationMilliseconds;
@@ -261,4 +269,14 @@ class Debouncer {
     _arguments = args;
     _resetTimer();
   }
+}
+Widget avatarUser() {
+  return ClipRRect(
+    borderRadius: BorderRadius.circular(50),
+    child: Container(
+      color: Colors.teal,
+      height: 70,
+      width: 70,
+    ),
+  );
 }

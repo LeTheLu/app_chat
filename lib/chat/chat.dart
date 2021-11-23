@@ -7,7 +7,8 @@ import 'package:flutter/material.dart';
 
 class Chat extends StatefulWidget {
   final String nameFriend;
-  const Chat({Key? key, required this.nameFriend}) : super(key: key);
+  final String idChatRoom;
+  const Chat({required this.nameFriend,required this.idChatRoom, Key? key}) : super(key: key);
 
   @override
   _ChatState createState() => _ChatState();
@@ -17,38 +18,35 @@ class _ChatState extends State<Chat> {
   DatabaseMethod userData = DatabaseMethod();
   StreamController<bool> stream = StreamController();
   bool isInit = true;
-  final Stream<QuerySnapshot> _usersStream = FirebaseFirestore.instance
-      .collection('chat')
-      .doc("098")
-      .collection("234")
-      .orderBy("time", descending: false)
-      .snapshots();
   bool checkIsUser = true;
 
   final ScrollController _controller = ScrollController();
+  late Stream<QuerySnapshot> usersStream;
   @override
   void initState() {
-    // TODO: implement initState
+    usersStream = FirebaseFirestore.instance.collection('chat')
+        .doc(widget.idChatRoom)
+        .collection("chat")
+        .orderBy("time", descending: false)
+        .snapshots();
     super.initState();
+    WidgetsBinding.instance!.addPostFrameCallback((timeStamp) {
+
+    });
     stream.stream.listen((event) {
       if(event&& isInit){
         _controller.animateTo(
           _controller.position.maxScrollExtent,
-          duration: Duration(seconds: 1),
+          duration: const Duration(milliseconds: 100),
           curve: Curves.fastOutSlowIn,
         );
-        // isInit = false;
       }
     });
-    // WidgetsBinding.instance?.addPostFrameCallback((timeStamp) {
-    //
-    //
-    // });
   }
+
   @override
   Widget build(BuildContext context) {
     TextEditingController textEditingController = TextEditingController();
-
     return Scaffold(
       backgroundColor: Colors.cyan[200],
       body: SafeArea(
@@ -101,7 +99,7 @@ class _ChatState extends State<Chat> {
               height: double.infinity,
               width: double.infinity,
               child: StreamBuilder(
-                stream: _usersStream,
+                stream: usersStream,
                 builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
                   if (snapshot.hasError) {
                     return const Center(
@@ -150,6 +148,7 @@ class _ChatState extends State<Chat> {
                     onTap: (){
                       setState(() {
                         userData.sendMessage(
+                          idRoom: widget.idChatRoom,
                             user: UserInheritedWidget.of(context).user.name ?? "",
                             message: textEditingController.text);
                       });
