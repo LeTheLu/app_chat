@@ -15,23 +15,42 @@ class _HomeState extends State<Home> {
   bool searchCheck = false;
   final TextEditingController _controllerSearch = TextEditingController();
   DatabaseMethod userData = DatabaseMethod();
-  Debouncer debouncer = Debouncer(500);
+  Delay debouncer = Delay(500);
   String emailUser = '';
 
   List list = [];
+  List<UserData> listSearch = [];
+
+  getListSearch() async {
+    listSearch = await userData.getUserByUserName(name: _controllerSearch.text);
+    listSearch.removeWhere((element) => element.name == UserInheritedWidget.of(context).user.name);
+    setState(() {
+    });
+  }
+  getListHistory() async {
+    emailUser = UserInheritedWidget.of(context).user.email!;
+    list = await userData.getIdChatRoomsByEmailUserHome(emailUser:emailUser);
+    setState(() {});
+  }
 
 @override
   void initState() {
-    WidgetsBinding.instance!.addPostFrameCallback((timeStamp) async  {
-      emailUser = UserInheritedWidget.of(context).user.email!;
-      list = await userData.getIdChatRoomsByEmailUserHome(emailUser:emailUser);
-      setState(() {});
+    WidgetsBinding.instance!.addPostFrameCallback((timeStamp) {
+      getListHistory();
     });
   super.initState();
+    _controllerSearch.addListener(() {
+      if(_controllerSearch.text == ""){
+        getListHistory();
+      }
+      Delay(700);
+      getListSearch();
+      setState(() {});
+    });
   }
+
   @override
   Widget build(BuildContext context){
-
     return Scaffold(
         backgroundColor: Colors.cyan[200],
         body: SafeArea(
@@ -140,7 +159,8 @@ class _HomeState extends State<Home> {
                           topRight: Radius.circular(50))),
                   height: double.infinity,
                   width: double.infinity,
-                  child: ListView.separated(
+                  child: listSearch.isEmpty
+                      ? ListView.separated(
                       separatorBuilder: (context, index) => const Padding(
                             padding: EdgeInsets.symmetric(horizontal: 10.0),
                             child: Divider(),
@@ -150,15 +170,19 @@ class _HomeState extends State<Home> {
                        return UserFriend(idChatRoom: list[index],);
                          //userFriend(name: "nameFriend",idChatRoom: list[index]);
                       }
-                ),
+                )
+                      : ListView.builder(
+                    itemCount: listSearch.length,
+                      itemBuilder: (context, index) =>
+                      UserFriendSearch(userFriend: listSearch[index])),
               )))
             ],
           ),
         ),
-
     );
   }
 }
+
 class UserFriend extends StatefulWidget {
   final String idChatRoom;
   const UserFriend({Key? key,required this.idChatRoom}) : super(key: key);
@@ -166,7 +190,6 @@ class UserFriend extends StatefulWidget {
   @override
   State<UserFriend> createState() => _UserFriendState();
 }
-
 class _UserFriendState extends State<UserFriend> {
   DatabaseMethod userData = DatabaseMethod();
   String nameFriend= "";
@@ -217,25 +240,62 @@ class _UserFriendState extends State<UserFriend> {
                 ),
               ],
             ),
-            Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class UserFriendSearch extends StatefulWidget {
+  final UserData userFriend;
+  const UserFriendSearch({Key? key,required this.userFriend}) : super(key: key);
+
+  @override
+  State<UserFriendSearch> createState() => _UserFriendSearchState();
+}
+class _UserFriendSearchState extends State<UserFriendSearch> {
+  DatabaseMethod userData = DatabaseMethod();
+  String idChatRoom = "";
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () async {
+        idChatRoom = await userData.getIdChatRoomBy2Email(emailUser: UserInheritedWidget.of(context).user.email ?? "",emailFriend: widget.userFriend.email??"");
+        await Navigator.push(context, MaterialPageRoute(builder: (_) => Chat(idChatRoom: idChatRoom,nameFriend: widget.userFriend.name ?? "",)));
+      },
+      child: Container(
+        padding: const EdgeInsets.all(10),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
               children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(50),
-                  child: Container(
-                    color: Colors.blueAccent,
-                    height: 20,
-                    width: 20,
-                    child: const Center(child: Text("1")),
-                  ),
-                ),
+                avatarUser(),
                 const SizedBox(
-                  height: 15,
+                  width: 10,
                 ),
-                const Text("10:10 AM")
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      widget.userFriend.name ?? "",
+                      style: const TextStyle(
+                          color: Colors.black,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w500),
+                    ),
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    const Text("messenger",
+                        style: TextStyle(color: Colors.grey, fontSize: 15))
+                  ],
+                ),
               ],
-            )
+            ),
           ],
         ),
       ),
@@ -244,12 +304,12 @@ class _UserFriendState extends State<UserFriend> {
 }
 
 
-class Debouncer {
+class Delay {
   final int _durationMilliseconds;
   Timer? _timer;
   Function? _currentFn;
   List? _arguments;
-  Debouncer(this._durationMilliseconds) {
+  Delay(this._durationMilliseconds) {
     _resetTimer();
   }
 
