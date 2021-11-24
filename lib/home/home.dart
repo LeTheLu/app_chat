@@ -1,8 +1,11 @@
 import 'dart:async';
 import 'package:app_chat/chat/chat.dart';
+import 'package:app_chat/home/cubit_home.dart';
+import 'package:app_chat/home/state_home.dart';
 import 'package:app_chat/model/user.dart';
 import 'package:app_chat/servies/database.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class Home extends StatefulWidget {
   const Home({Key? key}) : super(key: key);
@@ -13,207 +16,214 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   bool searchCheck = false;
-  final TextEditingController _controllerSearch = TextEditingController();
   DatabaseMethod userData = DatabaseMethod();
+
+  final TextEditingController _controllerSearch = TextEditingController();
+
   Delay debouncer = Delay(500);
   String emailUser = '';
 
-  List list = [];
+  final CubitHome _cubitHome = CubitHome();
+
+  List listFriend = [];
   List<UserData> listSearch = [];
 
-  getListSearch() async {
-    listSearch = await userData.getUserByUserName(name: _controllerSearch.text);
-    listSearch.removeWhere((element) => element.name == UserInheritedWidget.of(context).user.name);
-    setState(() {
-    });
-  }
-  getListHistory() async {
-    emailUser = UserInheritedWidget.of(context).user.email!;
-    list = await userData.getIdChatRoomsByEmailUserHome(emailUser:emailUser);
-    setState(() {});
-  }
 
-@override
+  @override
   void initState() {
-    WidgetsBinding.instance!.addPostFrameCallback((timeStamp) {
-      getListHistory();
+    WidgetsBinding.instance!.addPostFrameCallback((timeStamp) async {
+      listFriend = await _cubitHome.getListHistory(context);
+      print(listFriend);
     });
-  super.initState();
-    _controllerSearch.addListener(() {
+    super.initState();
+    _controllerSearch.addListener(() async {
       if(_controllerSearch.text == ""){
-        getListHistory();
+        listFriend = await _cubitHome.getListHistory(context);
       }
       Delay(700);
-      getListSearch();
-      setState(() {});
+      //list = await _cubitHome.getListSearch(context,name: _controllerSearch.text);
     });
   }
 
   @override
-  Widget build(BuildContext context){
+  Widget build(BuildContext context) {
     return Scaffold(
-        backgroundColor: Colors.cyan[200],
-        body: SafeArea(
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(10),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        avatarUser(),
-                        const SizedBox(
-                          width: 10,
-                        ),
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              UserInheritedWidget.of(context).user.name ??
-                                  'User',
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.black,
-                                  fontSize: 20),
-                            ),
-                            Row(
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.only(right: 8.0),
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(50),
-                                    child: Container(
-                                      color: Colors.green,
-                                      height: 10,
-                                      width: 10,
-                                    ),
+      backgroundColor: Colors.cyan[200],
+      body: SafeArea(
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(10),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      avatarUser(),
+                      const SizedBox(
+                        width: 10,
+                      ),
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            UserInheritedWidget.of(context).user.name ?? 'User',
+                            style: const TextStyle(
+                                fontWeight: FontWeight.w600,
+                                color: Colors.black,
+                                fontSize: 20),
+                          ),
+                          Row(
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.only(right: 8.0),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(50),
+                                  child: Container(
+                                    color: Colors.green,
+                                    height: 10,
+                                    width: 10,
                                   ),
                                 ),
-                                Text(
-                                  "Đang hoạt động",
-                                  style: TextStyle(color: Colors.grey[900]),
-                                )
-                              ],
-                            )
-                          ],
-                        ),
-                      ],
+                              ),
+                              Text(
+                                "Đang hoạt động",
+                                style: TextStyle(color: Colors.grey[900]),
+                              )
+                            ],
+                          )
+                        ],
+                      ),
+                    ],
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        searchCheck = !searchCheck;
+                      });
+                    },
+                    child: Container(
+                      decoration: const BoxDecoration(
+                        color: Colors.white54,
+                        borderRadius: BorderRadius.all(Radius.circular(50)),
+                      ),
+                      height: 40,
+                      width: 40,
+                      child: const Icon(Icons.search, color: Colors.black),
                     ),
-                    GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          searchCheck = !searchCheck;
-                        });
-                      },
-                      child: Container(
+                  ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 10),
+              child: Visibility(
+                  visible: searchCheck,
+                  child: SizedBox(
+                    height: 50,
+                    width: MediaQuery.of(context).size.width - 20,
+                    child: Container(
+                      decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius:
+                              const BorderRadius.all(Radius.circular(30)),
+                          border: Border.all(color: Colors.teal)),
+                      child: Center(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                          child: TextField(
+                            controller: _controllerSearch,
+                            decoration: const InputDecoration.collapsed(
+                                hintText: "Search ... "),
+                          ),
+                        ),
+                      ),
+                    ),
+                  )),
+            ),
+            Expanded(
+                child: Opacity(
+                    opacity: 0.7,
+                    child: Container(
                         decoration: const BoxDecoration(
-                          color: Colors.white54,
-                          borderRadius: BorderRadius.all(Radius.circular(50)),
-                        ),
-                        height: 40,
-                        width: 40,
-                        child: const Icon(Icons.search, color: Colors.black),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 10),
-                child: Visibility(
-                    visible: searchCheck,
-                    child: SizedBox(
-                      height: 50,
-                      width: MediaQuery.of(context).size.width - 20,
-                      child: Container(
-                        decoration: BoxDecoration(
                             color: Colors.white,
-                            borderRadius:
-                                const BorderRadius.all(Radius.circular(30)),
-                            border: Border.all(color: Colors.teal)),
-                        child: Center(
-                          child: Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 10.0),
-                            child: TextField(
-                              controller: _controllerSearch,
-                              decoration: const InputDecoration.collapsed(
-                                  hintText: "Search ... "),
-                            ),
-                          ),
-                        ),
-                      ),
-                    )),
-              ),
-              Expanded(
-                  child: Opacity(
-                opacity: 0.7,
-                child: Container(
-                  decoration: const BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(50),
-                          topRight: Radius.circular(50))),
-                  height: double.infinity,
-                  width: double.infinity,
-                  child: listSearch.isEmpty
-                      ? ListView.separated(
-                      separatorBuilder: (context, index) => const Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 10.0),
-                            child: Divider(),
-                          ),
-                      itemCount: list.length,
-                      itemBuilder: (context, index){
-                       return UserFriend(idChatRoom: list[index],nameFriend: getItem(list[index]));
-                         //userFriend(name: "nameFriend",idChatRoom: list[index]);
-                      }
-                )
-                      : ListView.builder(
-                    itemCount: listSearch.length,
-                      itemBuilder: (context, index) =>
-                      UserFriendSearch(userFriend: listSearch[index])),
-              )))
-            ],
-          ),
+                            borderRadius: BorderRadius.only(
+                                topLeft: Radius.circular(50),
+                                topRight: Radius.circular(50))),
+                        height: double.infinity,
+                        width: double.infinity,
+                        child: BlocBuilder<CubitHome, StateHome>(
+                          buildWhen: (pre, cur) => pre.enumHome != cur.enumHome,
+                          bloc: _cubitHome,
+                          builder: (context, state) {
+                            if (state.enumHome == EnumHome.loadingHome) {
+                            } else if (state.enumHome == EnumHome.errHome) {
+                            } else if (state.enumHome == EnumHome.doneHome){
+                            } else if (state.enumHome == EnumHome.initSearch) {
+                            } else if (state.enumHome == EnumHome.loadingSearch) {
+                            } else if (state.enumHome == EnumHome.doneSearch) {
+                            } else if (state.enumHome == EnumHome.errSearch) {}
+                            return ListView.separated(
+                                separatorBuilder: (context, index) =>
+                                    const Padding(
+                                      padding: EdgeInsets.symmetric(
+                                          horizontal: 10.0),
+                                      child: Divider(),
+                                    ),
+                                itemCount: listFriend.length,
+                                itemBuilder: (context, index) {
+                                  print(listFriend[index]);
+                                  return UserFriend(idChatRoom: listFriend[index].key, nameFriend:listFriend[index].values);
+                                  //;
+                                });
+                          },
+                        )))),
+          ],
         ),
+      ),
     );
   }
-  getItem(String idChatRoom) async {
-    String id = await userData.getIdFriendInChatRoom(emailUser: UserInheritedWidget.of(context).user.email ?? "" ,idChatRoom: idChatRoom );
-    String nameFriend = await userData.getNameById(id: id);
-    return nameFriend;
-  }
 }
-
+/*    : ListView.builder(
+itemCount: listSearch.length,
+itemBuilder: (context, index) =>
+UserFriendSearch(userFriend: listSearch[index])),*/
 
 class UserFriend extends StatefulWidget {
   final String idChatRoom;
   final String nameFriend;
 
-  const UserFriend({Key? key,required this.idChatRoom,required this.nameFriend}) : super(key: key);
+  const UserFriend(
+      {Key? key, required this.idChatRoom, required this.nameFriend})
+      : super(key: key);
 
   @override
   State<UserFriend> createState() => _UserFriendState();
 }
+
 class _UserFriendState extends State<UserFriend> {
   DatabaseMethod userData = DatabaseMethod();
 
   @override
   void initState() {
-    WidgetsBinding.instance!.addPostFrameCallback((timeStamp) async  {
-
+    WidgetsBinding.instance!.addPostFrameCallback((timeStamp) async {
       setState(() {});
     });
     super.initState();
   }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: (){
-        Navigator.push(context, MaterialPageRoute(builder: (_) => Chat(idChatRoom: widget.idChatRoom,nameFriend: widget.nameFriend,)));
+      onTap: () {
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (_) => Chat(
+                      idChatRoom: widget.idChatRoom,
+                      nameFriend: widget.nameFriend,
+                    )));
       },
       child: Container(
         padding: const EdgeInsets.all(10),
@@ -255,11 +265,13 @@ class _UserFriendState extends State<UserFriend> {
 
 class UserFriendSearch extends StatefulWidget {
   final UserData userFriend;
-  const UserFriendSearch({Key? key,required this.userFriend}) : super(key: key);
+  const UserFriendSearch({Key? key, required this.userFriend})
+      : super(key: key);
 
   @override
   State<UserFriendSearch> createState() => _UserFriendSearchState();
 }
+
 class _UserFriendSearchState extends State<UserFriendSearch> {
   DatabaseMethod userData = DatabaseMethod();
   String idChatRoom = "";
@@ -268,8 +280,16 @@ class _UserFriendSearchState extends State<UserFriendSearch> {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () async {
-        idChatRoom = await userData.getIdChatRoomBy2Email(emailUser: UserInheritedWidget.of(context).user.email ?? "",emailFriend: widget.userFriend.email??"");
-        await Navigator.push(context, MaterialPageRoute(builder: (_) => Chat(idChatRoom: idChatRoom,nameFriend: widget.userFriend.name ?? "",)));
+        idChatRoom = await userData.getIdChatRoomBy2Email(
+            emailUser: UserInheritedWidget.of(context).user.email ?? "",
+            emailFriend: widget.userFriend.email ?? "");
+        await Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (_) => Chat(
+                      idChatRoom: idChatRoom,
+                      nameFriend: widget.userFriend.name ?? "",
+                    )));
       },
       child: Container(
         padding: const EdgeInsets.all(10),
@@ -309,7 +329,6 @@ class _UserFriendSearchState extends State<UserFriendSearch> {
   }
 }
 
-
 class Delay {
   final int _durationMilliseconds;
   Timer? _timer;
@@ -336,6 +355,7 @@ class Delay {
     _resetTimer();
   }
 }
+
 Widget avatarUser() {
   return ClipRRect(
     borderRadius: BorderRadius.circular(50),

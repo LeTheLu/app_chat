@@ -1,8 +1,10 @@
 import 'package:app_chat/model/user.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/cupertino.dart';
 
 class DatabaseMethod {
-  Future<String> newChatRoom({required String emailUser, required String emailFriend}) async {
+  Future<String> newChatRoom(
+      {required String emailUser, required String emailFriend}) async {
     String idChatRoom = "";
     String idUser = await getIdByGmail(email: emailUser);
     String idFriend = await getIdByGmail(email: emailFriend);
@@ -11,7 +13,8 @@ class DatabaseMethod {
       "email": {idUser: true, idFriend: true}
     };
     FirebaseFirestore.instance.collection("chat").doc().set(map);
-    idChatRoom = await getIdChatRoomBy2Email(emailFriend: emailFriend, emailUser: emailUser);
+    idChatRoom = await getIdChatRoomBy2Email(
+        emailFriend: emailFriend, emailUser: emailUser);
     return idChatRoom;
   }
 
@@ -63,7 +66,8 @@ class DatabaseMethod {
     return listUser;
   }
 
-  Future<String> getIdChatRoomBy2Email({required String emailUser, required String emailFriend}) async {
+  Future<String> getIdChatRoomBy2Email(
+      {required String emailUser, required String emailFriend}) async {
     String id = "";
     try {
       String idUser = await getIdByGmail(email: emailUser);
@@ -72,9 +76,10 @@ class DatabaseMethod {
           .collection("chat")
           .where("email.$idUser", isEqualTo: true)
           .where("email.$idFriend", isEqualTo: true)
-          .get().then((value) => id = value.docs.first.id);
+          .get()
+          .then((value) => id = value.docs.first.id);
     } catch (e) {
-      id = await newChatRoom(emailUser: emailUser,emailFriend: emailFriend);
+      id = await newChatRoom(emailUser: emailUser, emailFriend: emailFriend);
     }
     return id;
   }
@@ -95,7 +100,10 @@ class DatabaseMethod {
     FirebaseFirestore.instance.collection("users").add(userMap);
   }
 
-  sendMessage({required String message, required String user, required String idRoom}) async {
+  sendMessage(
+      {required String message,
+      required String user,
+      required String idRoom}) async {
     Map<String, String> data = {
       "message": message,
       "user": user,
@@ -111,48 +119,60 @@ class DatabaseMethod {
 
   Future<List> listChatWithUser({required String emailUser}) async {
     List list = [];
-    try{
-    String idUser = await getIdByGmail(email: emailUser);
-    FirebaseFirestore.instance.collection("chat").where("email.$idUser", isEqualTo: true).get().then((value) {
-      for (var element in value.docs) {
-        list.add(element.id);
-      }
-      list = value.docs.map((e) => ChatRoom.fromJson(e.data())).toList();
-    });
-    }catch(e){
+    try {
+      String idUser = await getIdByGmail(email: emailUser);
+      FirebaseFirestore.instance
+          .collection("chat")
+          .where("email.$idUser", isEqualTo: true)
+          .get()
+          .then((value) {
+        for (var element in value.docs) {
+          list.add(element.id);
+        }
+        list = value.docs.map((e) => ChatRoom.fromJson(e.data())).toList();
+      });
+    } catch (e) {
       throw Exception(e);
     }
     return list;
   }
 
-  Future<String> getIdFriendInChatRoom({required String idChatRoom, required String emailUser}) async {
+  Future<String> getNameFriendInIdChatRoom(BuildContext context,
+      {required String idChatRoom}) async {
     String idFriend = "";
-    try{
-    String idUsers = await getIdByGmail(email: emailUser);
-    var a = await FirebaseFirestore.instance.collection("chat").doc(idChatRoom).get();
-    Map<String, dynamic> map = Map<String, dynamic>.from(a.data()!.values.first);
-    map.removeWhere((key, value) => key == idUsers);
-    idFriend = map.keys.first;
-    }catch(e){
+    try {
+      String idUsers = await getIdByGmail(
+          email: UserInheritedWidget.of(context).user.email ?? "");
+      var a = await FirebaseFirestore.instance
+          .collection("chat")
+          .doc(idChatRoom)
+          .get();
+      Map<String, dynamic> map =
+          Map<String, dynamic>.from(a.data()!.values.first);
+      map.removeWhere((key, value) => key == idUsers);
+      idFriend = map.keys.first;
+    } catch (e) {
       throw Exception();
     }
-    return idFriend;
+    String nameFriend = await getNameById(id: idFriend);
+    return nameFriend;
   }
 
-  Future<List> getIdChatRoomsByEmailUserHome({required String emailUser}) async {
+  Future<List> getIdChatRoomsByEmailUserHome(BuildContext context) async {
     List listId = [];
     try {
-      String idUser = await getIdByGmail(email: emailUser);
+      String idUser = await getIdByGmail(
+          email: UserInheritedWidget.of(context).user.email ?? "");
       await FirebaseFirestore.instance
           .collection("chat")
           .where("email.$idUser", isEqualTo: true)
-          .get().then((value) =>value.docs.forEach((element) {
-            listId.add(element.id);
-      }));
+          .get()
+          .then((value) => value.docs.forEach((element) {
+                listId.add(element.id);
+              }));
     } catch (e) {
       throw Exception();
     }
     return listId;
   }
-
 }

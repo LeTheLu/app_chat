@@ -11,21 +11,29 @@ class SignInCubit extends Cubit<SignInState>{
   AuthMethod authMethods = AuthMethod();
   DatabaseMethod userData = DatabaseMethod();
 
-  Future<void> signMeIn({required BuildContext context,required String email,required String pass}) async {
+  Future<void> signMeIn(BuildContext context,{required String email,required String pass}) async {
     emit(state.copyWith(enumStateSignIn: EnumStateSignIn.loadingSignIn));
       authMethods.signInWithEmailAndPassWord(email: email, password: pass).then((value) async {
         UserInheritedWidget.of(context).user.email = email;
         UserInheritedWidget.of(context).user.name = "";
         await userData.getNameByUserGmail(email: UserInheritedWidget.of(context).user.email ?? "");
         Navigator.of(context).pushNamedAndRemoveUntil("chatRoom", (route) => false);
-        emit(state.copyWith(enumStateSignIn: EnumStateSignIn.doneSignIn));
       }).catchError((e) {
         emit(state.copyWith(enumStateSignIn: EnumStateSignIn.errSignIn));
       });
     }
-
+    Future<void> signMeInAgain() async {
+    emit(state.copyWith(enumStateSignIn: EnumStateSignIn.signInAgain));
+    }
   signInWithGoogle() {
     authMethods.signInWithGoogle();
+  }
+  setStatePass(bool checkHind){
+    if(checkHind){
+      emit(state.copyWith(enumStateSignIn: EnumStateSignIn.passHind));
+    }else{
+      emit(state.copyWith(enumStateSignIn: EnumStateSignIn.passShow));
+    }
   }
 
 

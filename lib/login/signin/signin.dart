@@ -19,7 +19,6 @@ class _LoginState extends State<Login> {
   final SignInCubit _signInCubit = SignInCubit();
 
   bool checkHind = true;
-  bool isLoad = false;
   bool checkSignInErr = false;
 
   final TextEditingController _controllerGmail = TextEditingController();
@@ -30,13 +29,15 @@ class _LoginState extends State<Login> {
 
   @override
   void initState() {
+    _controllerGmail.text = "lethelu@gmail.com";
+    _controllerPass.text = "lethelu123";
     super.initState();
   }
 
 
   validateForm() {
     if (keyFormSignIn.currentState!.validate()) {
-      _signInCubit.signMeIn(context: context, email: _controllerGmail.text,pass: _controllerPass.text);
+      _signInCubit.signMeIn(context, email: _controllerGmail.text,pass: _controllerPass.text);
     }
   }
 
@@ -62,6 +63,14 @@ class _LoginState extends State<Login> {
             );
           } else if(state.enumStateSignIn == EnumStateSignIn.errSignIn){
             checkSignInErr = true;
+          } else if(state.enumStateSignIn == EnumStateSignIn.signInAgain){
+            checkSignInErr = false;
+          }
+          else if(state.enumStateSignIn == EnumStateSignIn.passHind){
+            checkHind = true;
+          }
+          else if(state.enumStateSignIn == EnumStateSignIn.passShow){
+            checkHind = false;
           }
           return Stack(
             children: [
@@ -95,9 +104,7 @@ class _LoginState extends State<Login> {
                                         controller: _controllerPass,
                                         checkHind: checkHind,
                                         onPressed: () {
-                                          setState(() {
-                                            checkHind = !checkHind;
-                                          });
+                                          _signInCubit.setStatePass(!checkHind);
                                         }),
                                   ],
                                 ))
@@ -170,9 +177,7 @@ class _LoginState extends State<Login> {
                               right: 10,
                               child: GestureDetector(
                                 onTap: () {
-                                  setState(() {
-                                    checkSignInErr = false;
-                                  });
+                                    _signInCubit.signMeInAgain();
                                 },
                                 child: const SizedBox(
                                   height: 20,
