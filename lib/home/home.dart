@@ -167,7 +167,7 @@ class _HomeState extends State<Home> {
                           ),
                       itemCount: list.length,
                       itemBuilder: (context, index){
-                       return UserFriend(idChatRoom: list[index],);
+                       return UserFriend(idChatRoom: list[index],nameFriend: getItem(list[index]));
                          //userFriend(name: "nameFriend",idChatRoom: list[index]);
                       }
                 )
@@ -181,24 +181,30 @@ class _HomeState extends State<Home> {
         ),
     );
   }
+  getItem(String idChatRoom) async {
+    String id = await userData.getIdFriendInChatRoom(emailUser: UserInheritedWidget.of(context).user.email ?? "" ,idChatRoom: idChatRoom );
+    String nameFriend = await userData.getNameById(id: id);
+    return nameFriend;
+  }
 }
+
 
 class UserFriend extends StatefulWidget {
   final String idChatRoom;
-  const UserFriend({Key? key,required this.idChatRoom}) : super(key: key);
+  final String nameFriend;
+
+  const UserFriend({Key? key,required this.idChatRoom,required this.nameFriend}) : super(key: key);
 
   @override
   State<UserFriend> createState() => _UserFriendState();
 }
 class _UserFriendState extends State<UserFriend> {
   DatabaseMethod userData = DatabaseMethod();
-  String nameFriend= "";
 
   @override
   void initState() {
     WidgetsBinding.instance!.addPostFrameCallback((timeStamp) async  {
-      String id = await userData.getIdFriendInChatRoom(emailUser: UserInheritedWidget.of(context).user.email ?? "" ,idChatRoom: widget.idChatRoom );
-      nameFriend = await userData.getNameById(id: id);
+
       setState(() {});
     });
     super.initState();
@@ -207,7 +213,7 @@ class _UserFriendState extends State<UserFriend> {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: (){
-        Navigator.push(context, MaterialPageRoute(builder: (_) => Chat(idChatRoom: widget.idChatRoom,nameFriend: nameFriend,)));
+        Navigator.push(context, MaterialPageRoute(builder: (_) => Chat(idChatRoom: widget.idChatRoom,nameFriend: widget.nameFriend,)));
       },
       child: Container(
         padding: const EdgeInsets.all(10),
@@ -225,7 +231,7 @@ class _UserFriendState extends State<UserFriend> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      nameFriend,
+                      widget.nameFriend,
                       style: const TextStyle(
                           color: Colors.black,
                           fontSize: 18,

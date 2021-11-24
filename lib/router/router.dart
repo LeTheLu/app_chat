@@ -2,8 +2,8 @@
 
 import 'package:app_chat/chat/chat.dart';
 import 'package:app_chat/home/home.dart';
-import 'package:app_chat/login/signin.dart';
-import 'package:app_chat/login/singup.dart';
+import 'package:app_chat/login/signin/signin.dart';
+import 'package:app_chat/login/signup/signup.dart';
 import 'package:flutter/material.dart';
 
 class RouteName{
